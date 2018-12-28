@@ -67,7 +67,7 @@
 
             var spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             spaceKey.onDown.add(this.jump, this); 
-            
+            game.input.onDown.add(this.jump, this);
         },
         update: function()
         {
