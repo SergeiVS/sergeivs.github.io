@@ -1,9 +1,8 @@
 (function (){    
-    const screenWidth = 540;
-    const screenHeight = 720;
-    const rowsCount = 10;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
 
-
+console.log(window.width);
     const debugMode = false;
     
     const assetsFolder = "src/assets/";
@@ -117,7 +116,7 @@
             
 
             let santaScale = 0.15;
-            this.santa = game.add.sprite(100,245, "santa");
+            this.santa = game.add.sprite(this.game.world.width * 0.2, 245, "santa");
             this.santa.anchor.setTo(0.6, 0.5);
             this.santa.scale.setTo(santaScale, santaScale); 
             this.game.physics.p2.enable(this.santa, debugMode);
@@ -169,7 +168,7 @@
                     this.santa.angle += 1; 
                 if (this.santa.body.angle < 20)
                     this.santa.body.angle += 1;
-                this.santa.body.x = 100;
+                this.santa.body.x = this.game.world.width * 0.2;
             }
             if (this.santa.y < 0 || this.santa.y > screenHeight)
                 this.stopGame();
@@ -290,6 +289,7 @@
             gift.scale.setTo(scale, scale); 
             this.gifts.add(gift);
             this.game.physics.p2.enable(gift, debugMode);
+            gift.body.kinematic = true;
             gift.body.velocity.x = -100; 
             gift.body.data.gravityScale = 0.0001;
             gift.body.collideWorldBounds = false;
@@ -389,7 +389,7 @@
         }
     };
     
-    let game = new Phaser.Game(540, 720);
+    let game = new Phaser.Game(screenWidth, screenHeight);
     game.state.add("logo", logoState);
     game.state.add("preloader", preloaderState);
     game.state.add("main", mainState);
