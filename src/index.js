@@ -3,7 +3,7 @@
     const screenHeight = 720;
     const rowsCount = 10;
 
-    const debugMode = true;
+    const debugMode = false;
     
     const assetsFolder = "src/assets/";
     const imagesFolder = "src/assets/images/";
@@ -38,6 +38,7 @@
             game.load.image("gift9", imagesFolder + "gift_9.png");
 
             game.load.spritesheet("start_button", imagesFolder + "start_button.png", 182, 80);
+            game.load.spritesheet("exit_button", imagesFolder + "exit_button.png", 182, 80);
 
             game.load.physics("physics", assetsFolder + "physics.json")
 
@@ -135,7 +136,7 @@
                 this.santa.body.x = 100;
             }
             if (this.santa.y < 0 || this.santa.y > screenHeight)
-                this.restartGame();
+                this.stopGame();
         },
         resizePolygon: function(originalPhysicsKey, newPhysicsKey, shapeKey, scale)
         {
@@ -174,7 +175,20 @@
             this.santa.body.velocity.y = -360;
             this.jumpSound.play();
         },
+        stopGame: function()
+        {
+            this.labelScore.destroy();
+            this.header = game.add.text(game.world.width*0.5, game.world.height*0.2, "Собрано подарков:", { font: "30px Arial", fill: "#ffffff" });
+            this.header.anchor.setTo(0.5);
+            this.scoreLabel = game.add.text(game.world.width*0.5, game.world.height*0.4, this.score, { font: "120px Arial", fill: "#ffffff" });
+            this.scoreLabel.anchor.setTo(0.5);
+            this.mainMelody.stop();
+            this.dieMelody.play();
+            this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "start_button", this.restartGame, this, 0,1,2);
+            this.restartButton.anchor.setTo(0.5);
+        },
         restartGame: function() {
+            this.dieMelody.stop();
             game.state.start('main');
         },
         addClouds: function()
@@ -318,8 +332,6 @@
             game.time.events.remove(this.obstacleTimer);
             game.time.events.remove(this.giftsTimer);
             this.crash.play();
-            this.mainMelody.stop();
-            //this.dieMelody.play();
         },
         removeObstacle: function(obstacle)
         {
