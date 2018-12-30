@@ -3,16 +3,37 @@
     const screenHeight = 720;
     const rowsCount = 10;
 
+
     const debugMode = false;
     
     const assetsFolder = "src/assets/";
     const imagesFolder = "src/assets/images/";
     const audioFolder = "src/assets/sounds/";
     
-    let mainState = 
+    let logoState = 
     {
         preload: function()
         {
+            game.load.image("logo", imagesFolder + "logo.png");
+        },
+        create: function()
+        {
+
+            this.logo = this.game.add.sprite(0,0, "logo");
+            this.logo.width = this.game.world.width;
+            this.logo.height = this.game.world.height;
+            this.loadingLabel = game.add.text( this.game.world.width / 2, this.game.world.height - 50,"Загрузка", { font: "30px Arial", fill: "#ffffff" }); 
+            this.loadingLabel.anchor.setTo(0.5);
+            this.game.add.tween(this.loadingLabel).to({alpha:0}, 1000, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
+            this.game.state.start("preloader");
+        }
+    };
+
+    let preloaderState = 
+    {
+        preload: function()
+        {
+            
             game.load.image("santa", imagesFolder + "santa.png");
             game.load.image("plane", imagesFolder + "plane.png");
             game.load.image("balloon_1", imagesFolder + "balloon_1.png");
@@ -43,11 +64,24 @@
             game.load.physics("physics", assetsFolder + "physics.json")
 
             game.load.audio("hohoho", audioFolder + "ho-ho-ho.wav");
-            game.load.audio("main", audioFolder + "main.mp3");
-            game.load.audio("die", audioFolder + "die.mp3");
-            game.load.audio("pickup", audioFolder + "pickup.mp3");
-            game.load.audio("jump", audioFolder + "jump.mp3");
-            game.load.audio("crash", audioFolder + "crash.mp3");
+            game.load.audio("main", audioFolder + "main.wav");
+            game.load.audio("die", audioFolder + "die.wav");
+            game.load.audio("pickup", audioFolder + "pickup.wav");
+            game.load.audio("jump", audioFolder + "jump.wav");
+            game.load.audio("crash", audioFolder + "crash.wav");
+        },
+        create: function()
+        {
+            this.game.state.start("main");
+        }
+    };
+
+    let mainState = 
+    {
+
+        preload: function()
+        {
+            
         },
         create: function()
         {
@@ -69,8 +103,10 @@
             this.game.physics.p2.gravity.y = 1000;
             this.pause = true;
             this.score = 0;
-            this.sky = this.game.add.tileSprite(0, 0, this.game.cache.getImage("sky").width, this.game.height, "sky");
-            
+            this.sky = this.game.add.sprite(0,0, "sky");
+            this.sky.width = this.game.world.width;
+            this.sky.height = this.game.world.height;
+
             this.city = this.game.add.tileSprite(0,
                 this.game.height - this.game.cache.getImage("city").height,
                 this.game.width,
@@ -78,8 +114,7 @@
                 "city"
             );
 
-            this.labelScore = game.add.text(20, 20, "0", 
-                { font: "30px Arial", fill: "#ffffff" }); 
+            
 
             let santaScale = 0.15;
             this.santa = game.add.sprite(100,245, "santa");
@@ -101,19 +136,20 @@
             this.obstacleTimer = game.time.events.loop(2000, this.addObstacle, this);
             this.clouds = game.add.group();  
             this.addClouds(); 
-            game.time.events.loop(1500, this.addCloud, this); 
+            this.cloudTimer = game.time.events.loop(1500, this.addCloud, this); 
             this.gifts = game.add.group();  
             this.giftsTimer = game.time.events.loop(1000, this.addGift, this);  
 
             this.hohoho = this.game.add.audio("hohoho");
-            this.mainMelody = this.game.add.audio("main");
+            //this.mainMelody = this.game.add.audio("main", 1,  true);
             this.dieMelody = this.game.add.audio("die");
             this.pickup = this.game.add.audio("pickup");
             this.jumpSound = this.game.add.audio("jump");
             this.crash = this.game.add.audio("crash");    
 
-            this.dieMelody.stop();
-            this.mainMelody.play();
+            this.game.sound.stopAll();
+            this.game.sound.play("main");
+            //this.mainMelody.play();
             this.game.input.onDown.addOnce(() => {
                 this.game.sound.context.resume();
             });
@@ -177,18 +213,20 @@
         },
         stopGame: function()
         {
+            game.time.events.remove(this.obstacleTimer);
+            game.time.events.remove(this.giftsTimer);
+            game.time.events.remove(this.cloudTimer);
             this.labelScore.destroy();
             this.header = game.add.text(game.world.width*0.5, game.world.height*0.2, "Собрано подарков:", { font: "30px Arial", fill: "#ffffff" });
             this.header.anchor.setTo(0.5);
             this.scoreLabel = game.add.text(game.world.width*0.5, game.world.height*0.4, this.score, { font: "120px Arial", fill: "#ffffff" });
             this.scoreLabel.anchor.setTo(0.5);
-            this.mainMelody.stop();
-            this.dieMelody.play();
-            this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "start_button", this.restartGame, this, 0,1,2);
+            this.game.sound.stopAll();
+            this.game.sound.play("die");
+            this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "exit_button", this.restartGame, this, 0,1,2);
             this.restartButton.anchor.setTo(0.5);
         },
         restartGame: function() {
-            this.dieMelody.stop();
             game.state.start('main');
         },
         addClouds: function()
@@ -217,6 +255,7 @@
         },
         addCloud: function()
         {
+            if (this.clouds.length > 7) return;
             let index = Math.floor(Math.random() * 8) + 1;
             let y = Math.floor(Math.random() * screenHeight / 2);
             let size = Math.floor(Math.random() * 25);
@@ -297,7 +336,6 @@
             let x = screenWidth;
             let y = Math.floor(Math.random() * screenHeight);
             let scale = 0.4;
-            console.log("obstacle: " + obstacleName);
             let obstacle = this.game.add.sprite(x, y, obstacleName);
             obstacle.scale.setTo(scale, scale); 
             this.obstacles.add(obstacle);
@@ -329,8 +367,6 @@
             if (this.santa.alive == false)
                 return;
             this.santa.alive = false;
-            game.time.events.remove(this.obstacleTimer);
-            game.time.events.remove(this.giftsTimer);
             this.crash.play();
         },
         removeObstacle: function(obstacle)
@@ -344,6 +380,8 @@
         },
         resume: function()
         {
+            this.labelScore = game.add.text(20, 20, "0", 
+                { font: "30px Arial", fill: "#ffffff" }); 
             this.pause = false;
             this.santa.body.gravity.y = 1000;
             this.startButton.destroy();
@@ -352,8 +390,10 @@
     };
     
     let game = new Phaser.Game(540, 720);
+    game.state.add("logo", logoState);
+    game.state.add("preloader", preloaderState);
     game.state.add("main", mainState);
-    game.state.start("main");
+    game.state.start("logo");
 })()
     
     
