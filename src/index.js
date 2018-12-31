@@ -2,13 +2,48 @@
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
 
-console.log(window.width);
     const debugMode = false;
     
     const assetsFolder = "src/assets/";
     const imagesFolder = "src/assets/images/";
     const audioFolder = "src/assets/sounds/";
     
+    let helpState = 
+    {
+        preload: function()
+        {
+            
+        },
+        create: function () {
+            this.sky = this.game.add.sprite(0,0, "sky");
+            this.sky.width = this.game.world.width;
+            this.sky.height = this.game.world.height;
+
+            this.city = this.game.add.tileSprite(0,
+                this.game.height - this.game.cache.getImage("city").height,
+                this.game.width,
+                this.game.cache.getImage("city").height,
+                "city"
+            );
+            this.tutorial = this.game.add.sprite(this.game.world.width / 2, this.game.world.height / 2, "tutorial");
+            this.tutorial.anchor.setTo(0.5);
+            
+            if (this.tutorial.width > this.game.world.width)
+            {
+                let width = this.tutorial.width;
+                this.tutorial.width = this.game.world.width;
+                let k = this.tutorial.width / width;
+                this.tutorial.height = this.tutorial.height * k;
+            }
+            this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.9, "exit_button", () => {this.game.state.start("main")}, this, 0,1,2);
+            this.restartButton.anchor.setTo(0.5);
+        },
+        update: function()
+        {
+            this.city.tilePosition.x -= 0.15;
+        }
+    };
+
     let logoState = 
     {
         preload: function()
@@ -17,13 +52,9 @@ console.log(window.width);
         },
         create: function()
         {
-
             //this.logo = this.game.add.sprite(0,0, "logo");
             //this.logo.width = this.game.world.width;
             //this.logo.height = this.game.world.height;
-            this.loadingLabel = game.add.text( this.game.world.width / 2, this.game.world.height - 50,"Загрузка", { font: "30px Arial", fill: "#ffffff" }); 
-            this.loadingLabel.anchor.setTo(0.5);
-            this.game.add.tween(this.loadingLabel).to({alpha:0}, 1000, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
             this.game.state.start("preloader");
         }
     };
@@ -32,7 +63,12 @@ console.log(window.width);
     {
         preload: function()
         {
+            this.loadingLabel = game.add.text( this.game.world.width / 2, this.game.world.height - 50,"Загрузка", { font: "30px Arial", fill: "#ffffff" }); 
+            this.loadingLabel.anchor.setTo(0.5);
+            this.game.add.tween(this.loadingLabel).to({alpha:0}, 1000, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
             
+
+            game.load.image("tutorial", imagesFolder + "tutorial.png");
             game.load.image("santa", imagesFolder + "santa.png");
             game.load.image("plane", imagesFolder + "plane.png");
             game.load.image("balloon_1", imagesFolder + "balloon_1.png");
@@ -59,6 +95,7 @@ console.log(window.width);
 
             game.load.spritesheet("start_button", imagesFolder + "start_button.png", 182, 80);
             game.load.spritesheet("exit_button", imagesFolder + "exit_button.png", 182, 80);
+            game.load.spritesheet("help_button", imagesFolder + "help_button.png", 182, 80);
 
             game.load.physics("physics", assetsFolder + "physics.json")
 
@@ -155,6 +192,8 @@ console.log(window.width);
 
             this.startButton = this.game.add.button(game.world.width*0.5, game.world.height*0.5, "start_button", this.resume, this, 0,1,2);
             this.startButton.anchor.setTo(0.5);
+            this.helpButton = this.game.add.button(game.world.width*0.5, game.world.height*0.65, "help_button", this.help, this, 0,1,2);
+            this.helpButton.anchor.setTo(0.5);
             var spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             spaceKey.onDown.add(this.jump, this); 
             game.input.onDown.add(this.jump, this);
@@ -395,13 +434,19 @@ console.log(window.width);
             this.pause = false;
             this.santa.body.gravity.y = 1000;
             this.startButton.destroy();
+            this.helpButton.destroy();
             this.jump();
+        },
+        help: function()
+        {
+            this.game.state.start("help");
         }
     };
     
     let game = new Phaser.Game(screenWidth, screenHeight);
     game.state.add("logo", logoState);
     game.state.add("preloader", preloaderState);
+    game.state.add("help", helpState);
     game.state.add("main", mainState);
     game.state.start("logo");
 })()
