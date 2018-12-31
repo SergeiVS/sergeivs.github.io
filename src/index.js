@@ -37,6 +37,7 @@
             }
             this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.9, "exit_button", () => {this.game.state.start("main")}, this, 0,1,2);
             this.restartButton.anchor.setTo(0.5);
+            this.restartButton.scale.setTo(0.7);
         },
         update: function()
         {
@@ -48,7 +49,9 @@
     {
         preload: function()
         {
-            //game.load.image("logo", imagesFolder + "logo.png");
+            game.load.image("sky", imagesFolder + "sky.png");
+            game.load.image("city", imagesFolder + "city.png");
+            game.load.image("logo", imagesFolder + "logo.png");
         },
         create: function()
         {
@@ -63,6 +66,22 @@
     {
         preload: function()
         {
+            
+            this.sky = this.game.add.sprite(0,0, "sky");
+            this.sky.width = this.game.world.width;
+            this.sky.height = this.game.world.height;
+
+            this.city = this.game.add.tileSprite(0,
+                this.game.height - this.game.cache.getImage("city").height,
+                this.game.width,
+                this.game.cache.getImage("city").height,
+                "city"
+            );
+
+            this.logo = this.game.add.sprite(game.world.width*0.5, game.world.height*0.5, "logo");
+            this.logo.anchor.setTo(0.5);
+            this.logo.scale.setTo(0.4);
+            
             this.loadingLabel = game.add.text( this.game.world.width / 2, this.game.world.height - 50,"Загрузка", { font: "30px Arial", fill: "#ffffff" }); 
             this.loadingLabel.anchor.setTo(0.5);
             this.game.add.tween(this.loadingLabel).to({alpha:0}, 1000, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
@@ -73,8 +92,8 @@
             game.load.image("plane", imagesFolder + "plane.png");
             game.load.image("balloon_1", imagesFolder + "balloon_1.png");
             game.load.image("balloon_2", imagesFolder + "balloon_2.png");
-            game.load.image("sky", imagesFolder + "sky.png");
-            game.load.image("city", imagesFolder + "city.png");
+            
+            
             game.load.image("cloud1", imagesFolder + "cloud_1.png");
             game.load.image("cloud2", imagesFolder + "cloud_2.png");
             game.load.image("cloud3", imagesFolder + "cloud_3.png");
@@ -109,33 +128,24 @@
         create: function()
         {
             this.game.state.start("main");
+        },
+        update: function()
+        {
+            this.city.tilePosition.x -= 0.15;
         }
     };
 
     let mainState = 
     {
-
-        preload: function()
-        {
-            
-        },
         create: function()
         {
-            
-
             this.game.physics.startSystem(Phaser.Physics.P2JS);
-
             this.game.physics.p2.setImpactEvents(true);
-
-
-            
 
             this.santaCollisionGroup = this.game.physics.p2.createCollisionGroup();
             this.obstacleCollisionGroup = this.game.physics.p2.createCollisionGroup();
             this.giftCollisionGroup = this.game.physics.p2.createCollisionGroup();
             this.game.physics.p2.updateBoundsCollisionGroup();
-
-
             this.game.physics.p2.gravity.y = 1000;
             this.pause = true;
             this.score = 0;
@@ -149,8 +159,6 @@
                 this.game.cache.getImage("city").height,
                 "city"
             );
-
-            
 
             let santaScale = 0.15;
             this.santa = game.add.sprite(this.game.world.width * 0.2, 245, "santa");
@@ -192,8 +200,10 @@
 
             this.startButton = this.game.add.button(game.world.width*0.5, game.world.height*0.5, "start_button", this.resume, this, 0,1,2);
             this.startButton.anchor.setTo(0.5);
+            this.startButton.scale.setTo(0.7);
             this.helpButton = this.game.add.button(game.world.width*0.5, game.world.height*0.65, "help_button", this.help, this, 0,1,2);
             this.helpButton.anchor.setTo(0.5);
+            this.helpButton.scale.setTo(0.7);
             var spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
             spaceKey.onDown.add(this.jump, this); 
             game.input.onDown.add(this.jump, this);
@@ -271,6 +281,7 @@
             this.mainMelody.stop();
             this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "exit_button", this.restartGame, this, 0,1,2);
             this.restartButton.anchor.setTo(0.5);
+            this.restartButton.scale.setTo(0.7);
             //VK.api("secure.addAppEvent", {"activity_id": 2, "value": this.score }, function(data) {console.log(data)});
         },
         restartGame: function() {
