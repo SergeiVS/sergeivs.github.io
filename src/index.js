@@ -232,7 +232,7 @@ console.log(window.width);
             this.mainMelody.stop();
             this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "exit_button", this.restartGame, this, 0,1,2);
             this.restartButton.anchor.setTo(0.5);
-            VK.api("secure.addAppEvent", {"activity_id": 2, "value": this.score }, function(data) {console.log(data)});
+            //VK.api("secure.addAppEvent", {"activity_id": 2, "value": this.score }, function(data) {console.log(data)});
         },
         restartGame: function() {
             game.state.start('main');
