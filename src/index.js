@@ -13,14 +13,14 @@ console.log(window.width);
     {
         preload: function()
         {
-            game.load.image("logo", imagesFolder + "logo.png");
+            //game.load.image("logo", imagesFolder + "logo.png");
         },
         create: function()
         {
 
-            this.logo = this.game.add.sprite(0,0, "logo");
-            this.logo.width = this.game.world.width;
-            this.logo.height = this.game.world.height;
+            //this.logo = this.game.add.sprite(0,0, "logo");
+            //this.logo.width = this.game.world.width;
+            //this.logo.height = this.game.world.height;
             this.loadingLabel = game.add.text( this.game.world.width / 2, this.game.world.height - 50,"Загрузка", { font: "30px Arial", fill: "#ffffff" }); 
             this.loadingLabel.anchor.setTo(0.5);
             this.game.add.tween(this.loadingLabel).to({alpha:0}, 1000, Phaser.Easing.Linear.None, true, 0, 0, true).loop(true);
@@ -64,7 +64,7 @@ console.log(window.width);
 
             game.load.audio("hohoho", audioFolder + "ho-ho-ho.wav");
             game.load.audio("main", audioFolder + "main.wav");
-            game.load.audio("die", audioFolder + "die.wav");
+            //game.load.audio("die", audioFolder + "die.wav");
             game.load.audio("pickup", audioFolder + "pickup.wav");
             game.load.audio("jump", audioFolder + "jump.wav");
             game.load.audio("crash", audioFolder + "crash.wav");
@@ -140,15 +140,15 @@ console.log(window.width);
             this.giftsTimer = game.time.events.loop(1000, this.addGift, this);  
 
             this.hohoho = this.game.add.audio("hohoho");
-            //this.mainMelody = this.game.add.audio("main", 1,  true);
-            this.dieMelody = this.game.add.audio("die");
+            this.mainMelody = this.game.add.audio("main", 1,  true);
+            //this.dieMelody = this.game.add.audio("die");
             this.pickup = this.game.add.audio("pickup");
             this.jumpSound = this.game.add.audio("jump");
             this.crash = this.game.add.audio("crash");    
 
             this.game.sound.stopAll();
-            this.game.sound.play("main");
-            //this.mainMelody.play();
+            //this.game.sound.play("main");
+            this.mainMelody.play();
             this.game.input.onDown.addOnce(() => {
                 this.game.sound.context.resume();
             });
@@ -171,7 +171,14 @@ console.log(window.width);
                 this.santa.body.x = this.game.world.width * 0.2;
             }
             if (this.santa.y < 0 || this.santa.y > screenHeight)
+            {
+                if (this.santa.alive)
+                {
+                    this.santa.alive = false;
+                    this.crash.play();
+                }
                 this.stopGame();
+            }
         },
         resizePolygon: function(originalPhysicsKey, newPhysicsKey, shapeKey, scale)
         {
@@ -220,10 +227,12 @@ console.log(window.width);
             this.header.anchor.setTo(0.5);
             this.scoreLabel = game.add.text(game.world.width*0.5, game.world.height*0.4, this.score, { font: "120px Arial", fill: "#ffffff" });
             this.scoreLabel.anchor.setTo(0.5);
-            this.game.sound.stopAll();
-            this.game.sound.play("die");
+            //this.game.sound.stopAll();
+            //this.game.sound.play("die");
+            this.mainMelody.stop();
             this.restartButton = this.game.add.button(game.world.width*0.5, game.world.height*0.7, "exit_button", this.restartGame, this, 0,1,2);
             this.restartButton.anchor.setTo(0.5);
+            VK.api("secure.addAppEvent", {"activity_id": 2, "value": this.score }, function(data) {console.log(data)});
         },
         restartGame: function() {
             game.state.start('main');
@@ -301,8 +310,9 @@ console.log(window.width);
         },
         hitGift: function(santa, gift)
         {
-            if (this.santa.alive == false)
+            if (this.santa.alive == false || gift == null || gift.sprite == null || gift.sprite.alive == false)
                 return;
+            gift.sprite.alive = false;
             this.gifts.remove(gift.sprite);
             gift.destroy();
             this.pickup.play();
