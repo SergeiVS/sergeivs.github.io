@@ -305,7 +305,7 @@ var WebApp = window.Telegram.WebApp;
             );
             this.restartButton.anchor.setTo(0.5);
             this.restartButton.scale.setTo(0.7);
-            WebApp.showAlert(`Great, @${WebApp.WebAppUser.username}, your score is ${this.score}!`);
+            WebApp.showAlert(`Great, @${WebApp.initDataUnsafe.user.username}, your score is ${this.score}!`);
         },
         restartGame: function () {
             game.state.start("main");
